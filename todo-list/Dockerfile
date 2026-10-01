@@ -1,0 +1,16 @@
+From python:3.15-rc-slim
+
+WORKDIR /test
+
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY app.py .
+COPY templates ./templates
+RUN mkdir -p /app/data
+ENV DATABASE=/app/data/database.db
+
+EXPOSE 8000
+CMD ["python", "app.py"]

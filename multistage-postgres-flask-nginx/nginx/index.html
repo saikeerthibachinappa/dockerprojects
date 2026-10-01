@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Management</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+        }
+
+        input {
+            padding: 10px;
+            width: 70%;
+        }
+
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        #message {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>User Management</h1>
+
+    <input
+        type="text"
+        id="name"
+        placeholder="Enter user name"
+    >
+
+    <button onclick="addUser()">Add User</button>
+
+    <p id="message"></p>
+
+    <h2>Users</h2>
+
+    <ul id="userList"></ul>
+
+    <script>
+
+        async function loadUsers() {
+
+            const response = await fetch("/api/users");
+
+            const users = await response.json();
+
+            const userList = document.getElementById("userList");
+
+            userList.innerHTML = "";
+
+            users.forEach(user => {
+
+                const li = document.createElement("li");
+
+                li.textContent = `${user.id} - ${user.name}`;
+
+                userList.appendChild(li);
+            });
+        }
+
+
+        async function addUser() {
+
+            const nameInput = document.getElementById("name");
+
+            const name = nameInput.value.trim();
+
+            if (!name) {
+                document.getElementById("message").textContent =
+                    "Please enter a name";
+
+                return;
+            }
+
+            const response = await fetch("/api/users", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    name: name
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+
+                document.getElementById("message").textContent =
+                    "User added successfully!";
+
+                nameInput.value = "";
+
+                loadUsers();
+
+            } else {
+
+                document.getElementById("message").textContent =
+                    result.error;
+            }
+        }
+
+
+        loadUsers();
+
+    </script>
+
+</body>
+</html>

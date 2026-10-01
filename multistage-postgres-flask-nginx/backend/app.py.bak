@@ -1,0 +1,43 @@
+from flask import Flask, jsonify
+import psycopg2
+import os
+
+app = Flask(__name__)
+
+DB_HOST = os.getenv("DB_HOST")
+DB_NAME = os.getenv("POSTGRES_DB")
+DB_USER = os.getenv("POSTGRES_USER")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+
+def get_connection():
+    return psycopg2.connect(
+        host=DB_HOST,
+        database=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD
+    )
+
+@app.route("/api/")
+def home():
+    return jsonify({
+        "message": "PostgreSQL Docker App"
+    })
+
+@app.route("/api/users")
+def users():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id, name FROM users")
+    rows = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify([
+        {"id": row[0], "name": row[1]}
+        for row in rows
+    ])
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)

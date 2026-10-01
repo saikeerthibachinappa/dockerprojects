@@ -1,0 +1,42 @@
+services:
+  frontend:
+    build: ./frontend
+    container_name: frontend_container
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  backend:
+    build: .
+    container_name: backend_container
+    ports:
+      - "5050:5000"
+    environment:
+      MONGO_HOST: db
+      MONGO_PORT: 27017
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mongo:8-noble
+    container_name: db_container
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    healthcheck:
+      test: >
+        echo 'db.runCommand({ ping: 1 }).ok' |
+        mongosh mongodb://root:example@localhost:27017/admin --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
