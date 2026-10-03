@@ -8,7 +8,7 @@ services:
     - api
    volumes:
      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-     - ./nginx/index.html:/usr/share/nginx/html/index.html:ro
+     - s./nginx/index.html:/usr/share/nginx/html/index.html:ro
    
   api:
    build: ./backend
@@ -22,7 +22,9 @@ services:
      DB_HOST: db
      POSTGRES_DB: appdb
      POSTGRES_USER: appuser
-     POSTGRES_PASSWORD: apppassword 
+     POSTGRES_PASSWORD_FILE: /run/secrets/db_password 
+   secrets:
+     - db_password
   db:
    image: postgres:16
    container_name: postgresdb_container
@@ -34,12 +36,14 @@ services:
    environment:
       POSTGRES_DB: appdb
       POSTGRES_USER: appuser
-      POSTGRES_PASSWORD: apppassword
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
    healthcheck:
      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
      interval: 5s
      timeout: 5s
      retries: 5
+   secrets:
+     - db_password
 volumes:
   postgres_data:
     
